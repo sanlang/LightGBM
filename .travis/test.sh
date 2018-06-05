@@ -1,17 +1,16 @@
 if [[ ${TASK} == "gpu" ]]; then
-    bash .travis/amd_sdk.sh;
-    tar -xjf AMD-SDK.tar.bz2;
-    AMDAPPSDK=${HOME}/AMDAPPSDK;
-    export OPENCL_VENDOR_PATH=${AMDAPPSDK}/etc/OpenCL/vendors;
-    mkdir -p ${OPENCL_VENDOR_PATH};
-    sh AMD-APP-SDK*.sh --tar -xf -C ${AMDAPPSDK};
-    echo libamdocl64.so > ${OPENCL_VENDOR_PATH}/amdocl64.icd;
-    export LD_LIBRARY_PATH=${AMDAPPSDK}/lib/x86_64:${LD_LIBRARY_PATH};
-    chmod +x ${AMDAPPSDK}/bin/x86_64/clinfo;
-    ${AMDAPPSDK}/bin/x86_64/clinfo;
+    wget "http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_${CUDA_VERSION}_amd64.deb";
+    sudo dpkg -i cuda-repo-ubuntu1404_${CUDA_VERSION}_amd64.deb;
+    export CUDA_APT=${CUDA_VERSION%-*};
+    export CUDA_APT=${CUDA_APT/./-};
+    sudo apt-get install -y cuda-drivers cuda-core-${CUDA_APT} cuda-cudart-dev-${CUDA_APT} cuda-cufft-dev-${CUDA_APT};
+    sudo apt-get clean;
+    export CUDA_HOME=/usr/local/cuda-${CUDA_VERSION%%-*};
+    export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH};
+    export PATH=${CUDA_HOME}/bin:${PATH};
     export LIBRARY_PATH="$HOME/miniconda/envs/test-env/lib:$LIBRARY_PATH"
     export LD_RUN_PATH="$HOME/miniconda/envs/test-env/lib:$LD_RUN_PATH"
-    export CPLUS_INCLUDE_PATH="$HOME/miniconda/envs/test-env/include:$AMDAPPSDK/include/:$CPLUS_INCLUDE_PATH"
+    export CPLUS_INCLUDE_PATH="$HOME/miniconda/envs/test-env/include:/usr/local/cuda-7.5/include/:$CPLUS_INCLUDE_PATH"
 fi
 
 if [[ $TRAVIS_OS_NAME == "osx" ]]; then
@@ -88,7 +87,7 @@ if [[ ${TASK} == "gpu" ]]; then
     if [[ ${METHOD} == "pip" ]]; then
         sed -i 's/std::string device_type = "cpu";/std::string device_type = "gpu";/' ../include/LightGBM/config.h
         cd $TRAVIS_BUILD_DIR/python-package && python setup.py sdist || exit -1
-        cd $TRAVIS_BUILD_DIR/python-package/dist && pip install lightgbm-$LGB_VER.tar.gz -v --install-option=--gpu --install-option="--boost-root=$HOME/miniconda/envs/test-env/" --install-option="--opencl-include-dir=$AMDAPPSDK/include/" || exit -1
+        cd $TRAVIS_BUILD_DIR/python-package/dist && pip install lightgbm-$LGB_VER.tar.gz -v --install-option=--gpu --install-option="--boost-root=$HOME/miniconda/envs/test-env/" --install-option="--opencl-include-dir=/usr/local/cuda-7.5/include" --install-option="--opencl-library=/usr/local/cuda-7.5/lib64/libOpenCL.so" || exit -1
         cd $TRAVIS_BUILD_DIR && pytest tests/python_package_test || exit -1
         exit 0
     fi
@@ -102,7 +101,7 @@ if [[ ${TASK} == "mpi" ]]; then
     cd $TRAVIS_BUILD_DIR/build
     cmake -DUSE_MPI=ON ..
 elif [[ ${TASK} == "gpu" ]]; then
-    cmake -DUSE_GPU=ON -DBOOST_ROOT="$HOME/miniconda/envs/test-env/" -DOpenCL_INCLUDE_DIR=$AMDAPPSDK/include/ ..
+    cmake -DUSE_GPU=ON -DBOOST_ROOT="$HOME/miniconda/envs/test-env/" -DOpenCL_LIBRARY=/usr/local/cuda-7.5/lib64/libOpenCL.so -DOpenCL_INCLUDE_DIR=/usr/local/cuda-7.5/include ..
     sed -i 's/std::string device_type = "cpu";/std::string device_type = "gpu";/' ../include/LightGBM/config.h
 else
     cmake ..
