@@ -1,6 +1,7 @@
 if [[ ${TASK} == "gpu" ]]; then
     wget "http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_${CUDA_VERSION}_amd64.deb";
     sudo dpkg -i cuda-repo-ubuntu1404_${CUDA_VERSION}_amd64.deb;
+    sudo apt-get update -qq;
     export CUDA_APT=${CUDA_VERSION%-*};
     export CUDA_APT=${CUDA_APT/./-};
     sudo apt-get install -y cuda-drivers cuda-core-${CUDA_APT} cuda-cudart-dev-${CUDA_APT} cuda-cufft-dev-${CUDA_APT};
