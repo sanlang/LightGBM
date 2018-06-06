@@ -23,8 +23,8 @@ env:
     - TASK=if-else
     - TASK=sdist PYTHON_VERSION=3.4
     - TASK=bdist PYTHON_VERSION=3.5
-    - TASK=gpu METHOD=source CUDA_VERSION=8.0.61-1
-    - TASK=gpu METHOD=pip
+    - TASK=gpu METHOD=source CUDA_VERSION=7.5-18
+#    - TASK=gpu METHOD=pip
 
 matrix:
   exclude:
