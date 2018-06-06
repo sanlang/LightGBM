@@ -16,6 +16,10 @@ else
         sudo apt-get update -q
         sudo apt-get install -y cmake
         sudo apt-get install -y libopenmpi-dev openmpi-bin build-essential
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
+        sudo apt-get update;
+        sudo apt-get install g++-5;
+        export CXX=g++-5 && export CC=gcc-5;
     fi
     wget -O conda.sh https://repo.continuum.io/miniconda/Miniconda${PYTHON_VERSION:0:1}-latest-Linux-x86_64.sh
 fi
